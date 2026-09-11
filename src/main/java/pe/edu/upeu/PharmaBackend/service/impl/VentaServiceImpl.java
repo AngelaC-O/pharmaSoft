@@ -52,7 +52,7 @@ public class VentaServiceImpl implements VentaService {
     @Transactional
     public VentaResponseDTO registrar(VentaRequestDTO request) {
         Cliente cliente = clienteRepository.findById(request.getClienteId())
-                .orElseThrow(() ->new RecursoNoEncontradoException("Cliente no encontrado con id: "+ request.getClienteId()));
+                .orElseThrow(() ->new RecursosNoEncontradoException("Cliente no encontrado con id: "+ request.getClienteId()));
 
         if (!Boolean.TRUE.equals(cliente.getEstado())) {
             throw new ReglaNegocioException("No se puede registrar una venta para un cliente inactivo");
@@ -67,7 +67,7 @@ public class VentaServiceImpl implements VentaService {
 
         for (DetalleVentaRequestDTO item: request.getDetalles()) {
             Producto producto = productoRepository.findById(item.getProductoId()).orElseThrow(() ->
-                    new RecursoNoEncontradoException("Producto no encontrado con id: "+ item.getProductoId()));
+                    new RecursosNoEncontradoException("Producto no encontrado con id: "+ item.getProductoId()));
 
             if (!Boolean.TRUE.equals(producto.getEstado())) {
                 throw new ReglaNegocioException("El producto "+ producto.getNombre()+ " se encuentra inactivo");
@@ -107,7 +107,7 @@ public class VentaServiceImpl implements VentaService {
     public VentaResponseDTO buscar(Long id) {
 
         Venta venta = ventaRepository.findById(id).orElseThrow(() ->
-                new RecursoNoEncontradoException("Venta no encontrada con id: "+ id));
+                new RecursosNoEncontradoException("Venta no encontrada con id: "+ id));
         return convertirResponse(venta);
     }
 

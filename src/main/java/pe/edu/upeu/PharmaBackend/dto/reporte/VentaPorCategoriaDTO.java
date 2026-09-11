@@ -1,4 +1,11 @@
 package pe.edu.upeu.PharmaBackend.dto.reporte;
 
-public record VentaPorCategoriaDTO() {
+import java.math.BigDecimal;
+
+public record VentaPorCategoriaDTO(
+        Long categoriaId,
+        String categoriaNombre,
+        Long cantidadVendida,
+        BigDecimal montoTotal
+) {
 }
