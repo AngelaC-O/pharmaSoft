@@ -219,7 +219,7 @@ public class VentaServiceImpl implements VentaService {
                                 )
                         ).toList();
 
-        String clienteNombre = venta.getCliente().getNombres()+ " "+ venta.getCliente().getApellidos();
+        String clienteNombre = venta.getCliente().getNombres() + " " + venta.getCliente().getApellidos();
 
         return new VentaResponseDTO(
                 venta.getId(),
@@ -231,3 +231,4 @@ public class VentaServiceImpl implements VentaService {
                 detalles
         );
     }
+}
