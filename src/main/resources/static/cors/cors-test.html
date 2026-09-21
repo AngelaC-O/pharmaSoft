@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba CORS</title>
+</head>
+<body>
+<h1>Prueba CORS - Puerto 4200</h1>
+
+<script>
+    fetch('http://localhost:8080/api/v1/reportes/ventas-por-categoria')
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+</script>
+</body>
+</html>
