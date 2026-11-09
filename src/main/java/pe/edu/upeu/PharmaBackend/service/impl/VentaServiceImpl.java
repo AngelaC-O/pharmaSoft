@@ -1,4 +1,8 @@
 package pe.edu.upeu.PharmaBackend.service.impl;
+import org.springframework.cache.annotation.CacheEvict;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTOS;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
@@ -50,7 +54,9 @@ public class VentaServiceImpl implements VentaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {PRODUCTOS, PRODUCTO}, allEntries = true)
     public VentaResponseDTO registrar(VentaRequestDTO request) {
+        log.info("Inicio de registro de venta | lineas={}", request.getDetalles().size());
         Cliente cliente = clienteRepository.findById(request.getClienteId())
                 .orElseThrow(() ->new RecursosNoEncontradoException("Cliente no encontrado con id: "+ request.getClienteId()));
 
@@ -99,6 +105,7 @@ public class VentaServiceImpl implements VentaService {
 
         Venta guardada =ventaRepository.save(venta);
 
+        log.info("Venta preparada | ventaId={} | lineas={}", guardada.getId(), request.getDetalles().size());
         return convertirResponse(guardada);
     }
 

@@ -1,6 +1,7 @@
 package pe.edu.upeu.PharmaBackend.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.MDC;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,8 @@ public class GlobalExceptionHandler {
                 "Not Found",
                 ex.getMessage(),
                 request.getRequestURI(),
-                null
+                null,
+                MDC.get("requestId")
         );
 
         return ResponseEntity
@@ -56,7 +58,8 @@ public class GlobalExceptionHandler {
                 "Conflict",
                 ex.getMessage(),
                 request.getRequestURI(),
-                null
+                null,
+                MDC.get("requestId")
         );
 
         return ResponseEntity
@@ -92,11 +95,39 @@ public class GlobalExceptionHandler {
                 "Bad Request",
                 "Existen errores de validación",
                 request.getRequestURI(),
-                validationErrors
+                validationErrors,
+                MDC.get("requestId")
         );
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(error);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(
+            org.springframework.security.core.AuthenticationException.class)
+    public org.springframework.http.ResponseEntity<ErrorResponseDTO> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex,
+            jakarta.servlet.http.HttpServletRequest request) {
+
+        org.slf4j.LoggerFactory
+                .getLogger(GlobalExceptionHandler.class)
+                .warn("Autenticación fallida en {} | motivo={}",
+                        request.getRequestURI(),
+                        ex.getClass().getSimpleName());
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                java.time.LocalDateTime.now(),
+                org.springframework.http.HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                "Usuario o contraseña incorrectos",
+                request.getRequestURI(),
+                null,
+                MDC.get("requestId")
+        );
+
+        return org.springframework.http.ResponseEntity
+                .status(org.springframework.http.HttpStatus.UNAUTHORIZED)
                 .body(error);
     }
 }

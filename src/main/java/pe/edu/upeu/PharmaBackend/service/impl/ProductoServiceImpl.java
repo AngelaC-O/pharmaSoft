@@ -1,5 +1,10 @@
 package pe.edu.upeu.PharmaBackend.service.impl;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTOS;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,6 +35,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = PRODUCTOS, allEntries = true)
     public ProductoResponseDTO create(ProductoRequestDTO t) {
         String nombre = t.getNombre().trim();
         if(productoRepository.existsByNombreIgnoreCase(nombre)){
@@ -54,6 +60,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {PRODUCTOS, PRODUCTO}, allEntries = true)
     public ProductoResponseDTO update(Long aLong, ProductoRequestDTO t) {
         Producto producto = productoRepository.findById(aLong).orElseThrow(()->
                 new RecursosNoEncontradoException(
@@ -83,6 +90,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = PRODUCTO, key = "#p0")
     public ProductoResponseDTO read(Long aLong) {
         Producto producto = productoRepository.findById(aLong)
                 .orElseThrow(()->
@@ -95,6 +103,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = {PRODUCTOS, PRODUCTO}, allEntries = true)
     public void delete(Long aLong) {
         Producto producto = productoRepository.findById(aLong).orElseThrow(()->
                 new RecursosNoEncontradoException(
@@ -106,6 +115,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = PRODUCTOS, key = "'lista'")
     public Iterable<ProductoResponseDTO> readAll() {
         return productoRepository.findAll()
                 .stream()
