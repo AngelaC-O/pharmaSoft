@@ -1,5 +1,11 @@
 package pe.edu.upeu.PharmaBackend.service.impl;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.CATEGORIAS;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTOS;
+import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,6 +31,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CATEGORIAS, allEntries = true)
     public CategoriaResponseDTO create(CategoriaRequestDTO t) {
         String nombre = t.getNombre().trim();
         if(categoriaRepository.existsByNombreIgnoreCase(nombre)){
@@ -43,6 +50,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
     @Transactional
     @Override
+    @CacheEvict(cacheNames = {CATEGORIAS, PRODUCTOS, PRODUCTO}, allEntries = true)
     public CategoriaResponseDTO update(Long aLong, CategoriaRequestDTO t) {
         Categoria categoria= categoriaRepository.findById(aLong).orElseThrow(()->
                 new RecursosNoEncontradoException(
@@ -51,7 +59,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         );
         categoria.setNombre(t.getNombre());
         categoria.setDescripcion(t.getDescripcion());
-        categoria.setDescripcion(t.getDescripcion());
+        categoria.setEstado(t.getEstado());
 
         Categoria catActualizada = categoriaRepository.save(categoria);
 
@@ -71,6 +79,8 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(cacheNames = CATEGORIAS, allEntries = true)
     public void delete(Long aLong) {
         Categoria categoria = categoriaRepository.findById(aLong).orElseThrow(()->
                 new RecursosNoEncontradoException(
@@ -82,6 +92,7 @@ public class CategoriaServiceImpl implements CategoriaService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = CATEGORIAS, key = "'lista'")
     public Iterable<CategoriaResponseDTO> readAll() {
         return categoriaRepository.findAll()
                 .stream()
