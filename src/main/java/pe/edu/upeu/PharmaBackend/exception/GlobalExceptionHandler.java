@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                "Existen errores de validaciÃ³n",
+                "Existen errores de validación",
                 request.getRequestURI(),
                 validationErrors,
                 MDC.get("requestId")
