@@ -11,8 +11,10 @@ spring:
     baseline-version: 1
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate.default_batch_fetch_size: 32
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
