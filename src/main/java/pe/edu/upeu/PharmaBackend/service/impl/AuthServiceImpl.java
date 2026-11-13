@@ -15,6 +15,9 @@ import pe.edu.upeu.PharmaBackend.security.*;
 import pe.edu.upeu.PharmaBackend.service.service.AuthService;
 
 import java.util.List;
+import pe.edu.upeu.PharmaBackend.auditoria.EventoAuditoria;
+import pe.edu.upeu.PharmaBackend.service.service.AuditoriaService;
+import org.springframework.security.core.AuthenticationException;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -24,11 +27,14 @@ public class AuthServiceImpl implements AuthService {
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
 
+    private final AuditoriaService auditoria;
+
     public AuthServiceImpl(
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             UsuarioRepository usuarioRepository,
-            UsuarioMapper usuarioMapper) {
+            UsuarioMapper usuarioMapper, AuditoriaService auditoria) {
+        this.auditoria = auditoria;
 
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -42,13 +48,14 @@ public class AuthServiceImpl implements AuthService {
 
         String username = request.getUsername().trim();
 
-        Authentication autenticacion =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                username,
-                                request.getPassword()
-                        )
-                );
+        Authentication autenticacion;
+        try {
+            autenticacion = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, request.getPassword()));
+        } catch (AuthenticationException ex) {
+            auditoria.registrar(EventoAuditoria.login("LOGIN_FALLIDO", username));
+            throw ex;
+        }
 
         UserDetails principal =
                 (UserDetails) autenticacion.getPrincipal();
@@ -60,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
         List<String> roles =
                 usuarioMapper.nombresRoles(usuario.getRoles());
 
+        auditoria.registrar(EventoAuditoria.login("LOGIN_EXITOSO", username));
         return new LoginResponseDTO(
                 token,
                 "Bearer",

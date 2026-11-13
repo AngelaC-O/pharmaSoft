@@ -1,4 +1,7 @@
 package pe.edu.upeu.PharmaBackend.service.impl;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
+import pe.edu.upeu.PharmaBackend.util.PaginacionUtil;
+import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -8,6 +11,8 @@ import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import pe.edu.upeu.PharmaBackend.auditoria.EventoAuditoria;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackend.dto.ProductoRequestDTO;
 import pe.edu.upeu.PharmaBackend.dto.ProductoResponseDTO;
@@ -22,13 +27,15 @@ import pe.edu.upeu.PharmaBackend.service.service.ProductoService;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
+    private final ApplicationEventPublisher eventos;
     private static final Logger LOG = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
-                               CategoriaRepository categoriaRepository) {
+                               CategoriaRepository categoriaRepository, ApplicationEventPublisher eventos) {
+        this.eventos = eventos;
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
     }
@@ -78,6 +85,7 @@ public class ProductoServiceImpl implements ProductoService {
         Categoria categoria = buscarCategoria(t.getCategoriaId());
 
         producto.setNombre(nombre);
+        var precioAnterior = producto.getPrecio();
         producto.setPrecio(t.getPrecio());
         producto.setStock(t.getStock());
         producto.setEstado(t.getEstado());
@@ -85,6 +93,10 @@ public class ProductoServiceImpl implements ProductoService {
 
         Producto prodActualizado = productoRepository.saveAndFlush(producto);
 
+        if (precioAnterior.compareTo(producto.getPrecio()) != 0) {
+            eventos.publishEvent(EventoAuditoria.de("PRECIO_MODIFICADO", "Producto",
+                    producto.getId(), precioAnterior + " -> " + producto.getPrecio()));
+        }
         return convertirResponse(prodActualizado);
     }
 
@@ -111,6 +123,8 @@ public class ProductoServiceImpl implements ProductoService {
                 )
         );
         productoRepository.delete(producto);
+        eventos.publishEvent(EventoAuditoria.de("PRODUCTO_ELIMINADO", "Producto",
+                producto.getId(), producto.getNombre()));
     }
 
     @Override
@@ -141,7 +155,18 @@ public class ProductoServiceImpl implements ProductoService {
                 producto.getCategoria().getId(),
                 producto.getCategoria().getNombre(),
                 producto.getFechaCreacion(),
-                producto.getFechaModificacion()
+                producto.getFechaModificacion(),
+                producto.getCreadoPor(),
+                producto.getModificadoPor()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(cacheNames = PRODUCTOS)
+    public PaginaResponseDTO<ProductoResponseDTO> listarPagina(int pagina, int tamanio, String ordenarPor, String direccion, Long categoriaId, String texto, boolean disponible) {
+        var solicitud = PaginacionUtil.construir(pagina, tamanio, ordenarPor, direccion, Set.of("nombre", "precio", "stock", "id"));
+        texto = texto == null || texto.isBlank() ? null : texto.trim();
+        return PaginaResponseDTO.de(productoRepository.buscarPagina(categoriaId, texto, disponible, solicitud).map(this::convertirResponse));
     }
 }

@@ -1,4 +1,5 @@
 package pe.edu.upeu.PharmaBackend.service.service;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
 
 import pe.edu.upeu.PharmaBackend.dto.VentaRequestDTO;
 import pe.edu.upeu.PharmaBackend.dto.VentaResponseDTO;
@@ -18,4 +19,5 @@ public interface VentaService {
             LocalDate hasta,
             String ordenarPor,
             String direccion);
+    PaginaResponseDTO<VentaResponseDTO> buscarPagina(Long clienteId, EstadoVenta estado, LocalDate desde, LocalDate hasta, String ordenarPor, String direccion, int pagina, int tamanio);
 }

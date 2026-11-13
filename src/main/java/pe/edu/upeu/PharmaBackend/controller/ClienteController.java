@@ -1,4 +1,5 @@
 package pe.edu.upeu.PharmaBackend.controller;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
 import pe.edu.upeu.PharmaBackend.dto.ClienteRequestDTO;
 import pe.edu.upeu.PharmaBackend.dto.ClienteResponseDTO;
 import pe.edu.upeu.PharmaBackend.service.service.ClienteService;
@@ -29,11 +30,14 @@ public class ClienteController {
     }
 
     @GetMapping
-    public ResponseEntity<Iterable<ClienteResponseDTO>> readAll() {
-
-        return ResponseEntity.ok(
-                clienteService.readAll()
-        );
+    public PaginaResponseDTO<ClienteResponseDTO> listar(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio,
+            @RequestParam(defaultValue = "apellidos") String ordenarPor,
+            @RequestParam(defaultValue = "asc") String direccion,
+            @RequestParam(required = false) String texto,
+            @RequestParam(defaultValue = "false") boolean disponible) {
+        return clienteService.listarPagina(pagina, tamanio, ordenarPor, direccion, texto, disponible);
     }
 
     @GetMapping("/{id}")

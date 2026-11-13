@@ -44,7 +44,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
-        Categoria catCreada = categoriaRepository.save(categoria);
+        Categoria catCreada = categoriaRepository.saveAndFlush(categoria);
 
         return convertirResponse(catCreada);
     }
@@ -61,7 +61,7 @@ public class CategoriaServiceImpl implements CategoriaService {
         categoria.setDescripcion(t.getDescripcion());
         categoria.setEstado(t.getEstado());
 
-        Categoria catActualizada = categoriaRepository.save(categoria);
+        Categoria catActualizada = categoriaRepository.saveAndFlush(categoria);
 
         return convertirResponse(catActualizada);
     }
@@ -106,7 +106,9 @@ public class CategoriaServiceImpl implements CategoriaService {
                 categoria.getDescripcion(),
                 categoria.getEstado(),
                 categoria.getFechaCreacion(),
-                categoria.getFechaModificacion()
+                categoria.getFechaModificacion(),
+                categoria.getCreadoPor(),
+                categoria.getModificadoPor()
         );
     }
 }

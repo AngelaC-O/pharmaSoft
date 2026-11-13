@@ -1,4 +1,7 @@
 package pe.edu.upeu.PharmaBackend.service.impl;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
+import pe.edu.upeu.PharmaBackend.util.PaginacionUtil;
+import java.util.Set;
 
 import pe.edu.upeu.PharmaBackend.dto.ClienteRequestDTO;
 import pe.edu.upeu.PharmaBackend.dto.ClienteResponseDTO;
@@ -71,7 +74,7 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setEstado(request.getEstado());
 
         Cliente guardado =
-                clienteRepository.save(cliente);
+                clienteRepository.saveAndFlush(cliente);
 
         log.info(
                 "Cliente registrado correctamente id={}",
@@ -168,7 +171,7 @@ public class ClienteServiceImpl implements ClienteService {
         cliente.setEstado(request.getEstado());
 
         Cliente actualizado =
-                clienteRepository.save(cliente);
+                clienteRepository.saveAndFlush(cliente);
 
         log.info(
                 "Cliente id={} actualizado correctamente",
@@ -211,7 +214,9 @@ public class ClienteServiceImpl implements ClienteService {
                 cliente.getDireccion(),
                 cliente.getEstado(),
                 cliente.getFechaCreacion(),
-                cliente.getFechaModificacion()
+                cliente.getFechaModificacion(),
+                cliente.getCreadoPor(),
+                cliente.getModificadoPor()
         );
     }
 
@@ -222,5 +227,13 @@ public class ClienteServiceImpl implements ClienteService {
         }
 
         return valor.trim();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginaResponseDTO<ClienteResponseDTO> listarPagina(int pagina, int tamanio, String ordenarPor, String direccion, String texto, boolean disponible) {
+        var solicitud = PaginacionUtil.construir(pagina, tamanio, ordenarPor, direccion, Set.of("nombres", "apellidos", "dni", "id"));
+        texto = texto == null || texto.isBlank() ? null : texto.trim();
+        return PaginaResponseDTO.de(clienteRepository.buscarPagina(texto, disponible, solicitud).map(this::convertirResponse));
     }
 }

@@ -1,4 +1,5 @@
 package pe.edu.upeu.PharmaBackend.controller;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
 
 import pe.edu.upeu.PharmaBackend.dto.ProductoRequestDTO;
 import pe.edu.upeu.PharmaBackend.dto.ProductoResponseDTO;
@@ -20,13 +21,16 @@ public class ProductoController {
 
 
     @GetMapping
-    public ResponseEntity<Iterable<ProductoResponseDTO>> findAll(){
-        return ResponseEntity.ok(
-                productoService.readAll()
-        );
+    public PaginaResponseDTO<ProductoResponseDTO> listar(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio,
+            @RequestParam(defaultValue = "nombre") String ordenarPor,
+            @RequestParam(defaultValue = "asc") String direccion,
+            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) String texto,
+            @RequestParam(defaultValue = "false") boolean disponible) {
+        return productoService.listarPagina(pagina, tamanio, ordenarPor, direccion, categoriaId, texto, disponible);
     }
-
-
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductoResponseDTO> findById(@PathVariable Long id){

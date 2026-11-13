@@ -1,4 +1,5 @@
 package pe.edu.upeu.PharmaBackend.controller;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
 
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -57,7 +58,7 @@ public class VentaController {
 
 
     @GetMapping("/buscar")
-    public ResponseEntity<List<VentaResponseDTO>> buscar(
+    public ResponseEntity<PaginaResponseDTO<VentaResponseDTO>> buscar(
 
             @RequestParam(required = false)
             Long clienteId,
@@ -77,16 +78,18 @@ public class VentaController {
             String ordenarPor,
 
             @RequestParam(required = false, defaultValue = "desc")
-            String direccion) {
+            String direccion,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
 
         return ResponseEntity.ok(
-                ventaService.buscarVentas(
+                ventaService.buscarPagina(
                         clienteId,
                         estado,
                         desde,
                         hasta,
                         ordenarPor,
-                        direccion
+                        direccion, pagina, tamanio
                 )
         );
     }

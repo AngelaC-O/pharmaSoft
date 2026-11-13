@@ -1,4 +1,6 @@
 package pe.edu.upeu.PharmaBackend.service.impl;
+import pe.edu.upeu.PharmaBackend.dto.PaginaResponseDTO;
+import pe.edu.upeu.PharmaBackend.util.PaginacionUtil;
 import org.springframework.cache.annotation.CacheEvict;
 import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTOS;
 import static pe.edu.upeu.PharmaBackend.config.RedisCacheConfig.PRODUCTO;
@@ -7,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import pe.edu.upeu.PharmaBackend.auditoria.EventoAuditoria;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upeu.PharmaBackend.dto.DetalleVentaRequestDTO;
 import pe.edu.upeu.PharmaBackend.dto.DetalleVentaResponseDTO;
@@ -33,6 +37,7 @@ import java.util.Set;
 
 @Service
 public class VentaServiceImpl implements VentaService {
+    private final ApplicationEventPublisher eventos;
     private static final Logger log = LoggerFactory.getLogger(VentaServiceImpl.class);
 
     private final VentaRepository ventaRepository;
@@ -45,7 +50,8 @@ public class VentaServiceImpl implements VentaService {
     public VentaServiceImpl(
             VentaRepository ventaRepository,
             ClienteRepository clienteRepository,
-            ProductoRepository productoRepository) {
+            ProductoRepository productoRepository, ApplicationEventPublisher eventos) {
+        this.eventos = eventos;
 
         this.ventaRepository = ventaRepository;
         this.clienteRepository = clienteRepository;
@@ -103,7 +109,9 @@ public class VentaServiceImpl implements VentaService {
 
         venta.setTotal(total);
 
-        Venta guardada =ventaRepository.save(venta);
+        Venta guardada = ventaRepository.saveAndFlush(venta);
+        eventos.publishEvent(EventoAuditoria.de("VENTA_REGISTRADA", "Venta", guardada.getId(),
+                "total=" + guardada.getTotal() + " | items=" + guardada.getDetalles().size()));
 
         log.info("Venta preparada | ventaId={} | lineas={}", guardada.getId(), request.getDetalles().size());
         return convertirResponse(guardada);
@@ -235,7 +243,21 @@ public class VentaServiceImpl implements VentaService {
                 clienteNombre,
                 venta.getEstado().name(),
                 venta.getTotal(),
-                detalles
+                detalles,
+                venta.getCreadoPor()
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginaResponseDTO<VentaResponseDTO> buscarPagina(Long clienteId, EstadoVenta estado, LocalDate desde, LocalDate hasta, String ordenarPor, String direccion, int pagina, int tamanio) {
+        if (desde != null && hasta != null && desde.isAfter(hasta)) {
+            throw new ReglaNegocioException("El rango de fechas es inválido");
+        }
+        var solicitud = PaginacionUtil.construir(pagina, tamanio, ordenarPor, direccion, CAMPOS_ORDENABLES);
+        return PaginaResponseDTO.de(ventaRepository.buscarPagina(clienteId, estado,
+                desde == null ? null : desde.atStartOfDay(),
+                hasta == null ? null : hasta.plusDays(1).atStartOfDay(), solicitud)
+                .map(this::convertirResponse));
     }
 }

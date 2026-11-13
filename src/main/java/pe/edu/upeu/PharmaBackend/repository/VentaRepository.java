@@ -1,4 +1,6 @@
 package pe.edu.upeu.PharmaBackend.repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VentaRepository extends JpaRepository<Venta, Long> {
+
+    @Query(value = """
+            select v from Venta v join fetch v.cliente c
+            where (:clienteId is null or c.id = :clienteId)
+              and (:estado is null or v.estado = :estado)
+              and (:desde is null or v.fecha >= :desde)
+              and (:hasta is null or v.fecha < :hasta)
+            """, countQuery = """
+            select count(v) from Venta v
+            where (:clienteId is null or v.cliente.id = :clienteId)
+              and (:estado is null or v.estado = :estado)
+              and (:desde is null or v.fecha >= :desde)
+              and (:hasta is null or v.fecha < :hasta)
+            """)
+    Page<Venta> buscarPagina(Long clienteId, EstadoVenta estado, LocalDateTime desde,
+            LocalDateTime hasta, Pageable pagina);
 
     @Query("""
             select distinct v

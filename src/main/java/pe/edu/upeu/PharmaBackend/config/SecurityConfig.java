@@ -95,6 +95,7 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/api/v1/usuarios/**",
+                                "/api/v1/auditoria/**",
                                 "/api/v1/empleados/**",
                                 "/api/v1/roles/**")
                         .hasAuthority(USUARIOS_ADMINISTRAR.name())
