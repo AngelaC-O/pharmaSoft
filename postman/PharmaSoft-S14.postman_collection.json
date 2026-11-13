@@ -1,0 +1,654 @@
+{
+  "info": {
+    "name": "PharmaSoft S14 - Integración y estabilización",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:8081/api/v1"
+    },
+    {
+      "key": "admin_password",
+      "value": ""
+    },
+    {
+      "key": "vendedor_password",
+      "value": ""
+    },
+    {
+      "key": "dni_prueba",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Login admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"admin\", \"password\": \"{{admin_password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set(\"admin_token\",pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login vendedor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"vendedor\", \"password\": \"{{vendedor_password}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.collectionVariables.set(\"vendedor_token\",pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login fallido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"admin\", \"password\": \"incorrecta\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos página 0, tamaño 20",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?pagina=0&tamanio=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Página y tamaño\", () => { const r=pm.response.json(); pm.expect(r.pagina).to.eql(0); pm.expect(r.tamanio).to.eql(20); pm.expect(r.contenido.length).to.be.at.most(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos página 0, tamaño 100",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?pagina=0&tamanio=100"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Página y tamaño\", () => { const r=pm.response.json(); pm.expect(r.pagina).to.eql(0); pm.expect(r.tamanio).to.eql(100); pm.expect(r.contenido.length).to.be.at.most(100); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos página 249, tamaño 20",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?pagina=249&tamanio=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Página y tamaño\", () => { const r=pm.response.json(); pm.expect(r.pagina).to.eql(249); pm.expect(r.tamanio).to.eql(20); pm.expect(r.contenido.length).to.be.at.most(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos página 250, tamaño 20",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?pagina=250&tamanio=20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Página y tamaño\", () => { const r=pm.response.json(); pm.expect(r.pagina).to.eql(250); pm.expect(r.tamanio).to.eql(20); pm.expect(r.contenido.length).to.be.at.most(20); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazo tamaño 500",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?pagina=0&tamanio=500"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazo campo de orden",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?ordenarPor=categoria.id"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ventas por rango",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/ventas/buscar?desde=2026-11-01&hasta=2026-11-12&pagina=0"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Ventas paginadas\", () => pm.expect(pm.response.json().contenido.length).to.be.at.most(20));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auditoría restringida a administrador",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{vendedor_token}}"
+          }
+        ],
+        "url": "{{base}}/auditoria"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cliente recién registrado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/clientes",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"dni\": \"{{dni_prueba}}\", \"nombres\": \"Ana\", \"apellidos\": \"Integración S14\", \"email\": \"s14-{{dni_prueba}}@example.test\", \"estado\": true}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"cliente_id\",pm.response.json().id);",
+              "pm.test(\"Actor registrado\", () => pm.expect(pm.response.json().creadoPor).to.eql(\"admin\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Buscador encuentra al nuevo cliente",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/clientes?texto={{dni_prueba}}&disponible=true"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Cliente localizado\", () => pm.expect(pm.response.json().contenido[0].id).to.eql(Number(pm.collectionVariables.get(\"cliente_id\"))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Producto disponible antes de vender",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{vendedor_token}}"
+          }
+        ],
+        "url": "{{base}}/productos?texto=Paracetamol%20S14&disponible=true"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const p=pm.response.json().contenido[0]; pm.collectionVariables.set(\"producto_id\",p.id); pm.collectionVariables.set(\"stock\",p.stock); pm.collectionVariables.set(\"precio\",p.precio); pm.collectionVariables.set(\"categoria_id\",p.categoriaId);",
+              "pm.test(\"Activo, stock suficiente y precio vigente\", () => {pm.expect(p.estado).to.be.true; pm.expect(p.stock).to.be.at.least(2); pm.expect(p.precio).to.be.above(0);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Venta confirmada",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{vendedor_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"clienteId\": \"{{cliente_id}}\", \"detalles\": [{\"productoId\": \"{{producto_id}}\", \"cantidad\": 2}]}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const v=pm.response.json(); pm.collectionVariables.set(\"venta_id\",v.id); pm.collectionVariables.set(\"venta_request_id\",pm.response.headers.get(\"X-Request-Id\"));",
+              "pm.test(\"Vendedor y total\", () => {pm.expect(v.creadoPor).to.eql(\"vendedor\");pm.expect(v.total).to.eql(Number(pm.collectionVariables.get(\"precio\"))*2);});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stock descontado",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{vendedor_token}}"
+          }
+        ],
+        "url": "{{base}}/productos/{{producto_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Stock anterior menos dos\", () => pm.expect(pm.response.json().stock).to.eql(Number(pm.collectionVariables.get(\"stock\"))-2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reporte incluye producto vendido",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/reportes/productos-mas-vendidos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Incluye la venta\", () => pm.expect(pm.response.json().find(p=>p.productoId===Number(pm.collectionVariables.get(\"producto_id\"))).cantidadVendida).to.be.at.least(2));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auditoría de venta y request ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/auditoria?accion=VENTA_REGISTRADA&usuario=vendedor"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Evento correlacionado\", () => pm.expect(pm.response.json().contenido.some(e=>e.entidadId===Number(pm.collectionVariables.get(\"venta_id\"))&&e.requestId===pm.collectionVariables.get(\"venta_request_id\"))).to.be.true);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Venta rechazada por stock",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{vendedor_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"clienteId\": \"{{cliente_id}}\", \"detalles\": [{\"productoId\": \"{{producto_id}}\", \"cantidad\": 999999}]}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "pm.collectionVariables.set(\"rechazo_request_id\",pm.response.headers.get(\"X-Request-Id\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rechazo sin evento de venta",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/auditoria?accion=VENTA_REGISTRADA"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Sin evento de la petición rechazada\", () => pm.expect(pm.response.json().contenido.some(e=>e.requestId===pm.collectionVariables.get(\"rechazo_request_id\"))).to.be.false);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cambiar precio y verificar actor",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/productos/{{producto_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"nombre\": \"Paracetamol S14\", \"precio\": \"{{precio_nuevo}}\", \"stock\": \"{{stock_nuevo}}\", \"estado\": true, \"categoriaId\": \"{{categoria_id}}\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"precio_nuevo\", (Number(pm.collectionVariables.get(\"precio\"))+0.10).toFixed(2));",
+              "pm.collectionVariables.set(\"stock_nuevo\", Number(pm.collectionVariables.get(\"stock\"))-2);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Modificado por admin\", () => pm.expect(pm.response.json().modificadoPor).to.eql(\"admin\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auditoría de precio anterior y nuevo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/auditoria?accion=PRECIO_MODIFICADO&usuario=admin"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Cambio de precio registrado\", () => { const e=pm.response.json().contenido[0]; pm.expect(e.detalle).to.include(pm.collectionVariables.get(\"precio_nuevo\"));pm.expect(e.entidadId).to.eql(Number(pm.collectionVariables.get(\"producto_id\"))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auditoría de login fallido",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": "{{base}}/auditoria?accion=LOGIN_FALLIDO&usuario=admin"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Login fallido persistido\", () => pm.expect(pm.response.json().totalElementos).to.be.above(0));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
